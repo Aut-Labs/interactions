@@ -1,0 +1,12 @@
+{
+    "plugins": ["prettier-plugin-solidity"],
+    "overrides": [
+      {
+        "files": "*.sol",
+        "options": {
+          "printWidth": 90,
+          "compiler": "0.8.23"
+        }
+      }
+    ]
+  }
