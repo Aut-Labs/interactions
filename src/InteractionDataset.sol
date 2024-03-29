@@ -5,11 +5,7 @@ import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProo
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
 interface IInteractionDataset {
-    event MerkleRootUpdated(
-        address indexed relayer,
-        bytes32 merkleRoot,
-        bytes32 proofsHash
-    );
+    event MerkleRootUpdated(address indexed relayer, bytes32 merkleRoot, bytes32 proofsHash);
 
     function merkleRoot() external view returns (bytes32);
     function proofsHash() external view returns (bytes32);
@@ -36,10 +32,7 @@ contract InteractionDataset is IInteractionDataset, AccessControl {
     uint32 public epoch;
 
     constructor(address initialRelayerManager) {
-        require(
-            address(initialRelayerManager) != address(0),
-            "should set initial manager"
-        );
+        require(address(initialRelayerManager) != address(0), "should set initial manager");
         _setRoleAdmin(RELAYER_ROLE, MANAGER_ROLE);
         _grantRole(MANAGER_ROLE, initialRelayerManager);
         _grantRole(RELAYER_ROLE, initialRelayerManager);
@@ -50,8 +43,6 @@ contract InteractionDataset is IInteractionDataset, AccessControl {
         bytes32 interactionId,
         bytes32[] calldata hashedPairsProof
     ) external view returns (bool) {
-        // backend deserialized and made sure that txHash is indeed interaction inthash
-        // by now it seems that any txHash could have at most corresponding intHash and vice-versa (except for funcSig collisions xD)
         return
             MerkleProof.verifyCalldata(
                 hashedPairsProof,

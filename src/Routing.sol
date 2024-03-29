@@ -11,7 +11,11 @@ interface IBasicRouter {
         string handle
     );
 
-    function castHandleToKey(string memory handle) external view returns (bytes32);
+    error NullAddressError();
+
+    error HandleKeyMissmatchError();
+
+    function castAsKey(string memory handle) external view returns (bytes32);
 
     function resolveFor(bytes32 key) external view returns (address);
 
@@ -22,28 +26,23 @@ contract BasicRouter is IBasicRouter, AccessControl {
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
 
-    bytes32 internal immutable _artefact;
-    mapping(bytes32 => address) internal _routes;
+    bytes32 internal immutable _ARTEFACT;
+    mapping(bytes32 discoveryKey => address linkedResource) internal _routes;
 
     constructor(address initialOperatorManager) {
-        require(initialOperatorManager != address(0));
+        if (initialOperatorManager == address(0)) {
+            revert NullAddressError();
+        }
 
         _setRoleAdmin(OPERATOR_ROLE, MANAGER_ROLE);
         _grantRole(MANAGER_ROLE, initialOperatorManager);
         _grantRole(OPERATOR_ROLE, initialOperatorManager);
 
-        _artefact = keccak256(
+        _ARTEFACT = keccak256(
             abi.encodePacked(
                 string.concat(
                     string.concat(__NAMESPACE, __CONTRACT),
-                    string(
-                        abi.encodePacked(
-                            block.chainid,
-                            block.number,
-                            msg.sender,
-                            tx.gasprice
-                        )
-                    )
+                    string(abi.encodePacked(block.chainid, block.number, msg.sender))
                 )
             )
         );
@@ -54,16 +53,19 @@ contract BasicRouter is IBasicRouter, AccessControl {
     }
 
     function createLink(address resource, bytes32 key, string calldata handle) external {
-        require(key == castHandleToKey(handle));
+        if (key != castAsKey(handle)) {
+            revert HandleKeyMissmatchError();
+        }
         _checkRole(OPERATOR_ROLE);
+
         _routes[key] = resource;
         emit RouteSaved(msg.sender, resource, key, handle);
     }
 
-    function castHandleToKey(string memory handle) public view returns (bytes32) {
-        return keccak256(abi.encode(_artefact, handle));
+    function castAsKey(string memory handle) public view returns (bytes32) {
+        return keccak256(abi.encode(_ARTEFACT, handle));
     }
 
     string private constant __NAMESPACE = "urn:autlabs:contracts";
-    string private constant __CONTRACT = "::interactions:router_v1-alpha";
+    string private constant __CONTRACT = "::interactions:router_v1_basic";
 }

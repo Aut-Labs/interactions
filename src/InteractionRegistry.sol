@@ -24,11 +24,9 @@ contract InteractionRegistry is IInteractionRegistry, AccessControl {
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
 
-    mapping(bytes32 => TInteractionData) internal _interactionDataFor;
+    mapping(bytes32 interactionId => TInteractionData data) internal _interactionDataFor;
     bytes32 internal constant INTERACTION_DATA_TYPEHASH =
-        keccak256(
-            "TInteractionData(uint16 chainId,address recipient, bytes4 functionSelector)"
-        );
+        keccak256("TInteractionData(uint16 chainId,address recipient, bytes4 functionSelector)");
 
     constructor(address initialOperatorManager) {
         require(initialOperatorManager != address(0), "should set initial manager");
@@ -38,9 +36,7 @@ contract InteractionRegistry is IInteractionRegistry, AccessControl {
         _grantRole(OPERATOR_ROLE, initialOperatorManager);
     }
 
-    function interactionDataFor(
-        bytes32 key
-    ) external view returns (uint16, address, bytes4) {
+    function interactionDataFor(bytes32 key) external view returns (uint16, address, bytes4) {
         require(key != bytes32(0));
         TInteractionData memory interactionData = _interactionDataFor[key];
         return (

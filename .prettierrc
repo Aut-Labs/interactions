@@ -4,7 +4,7 @@
       {
         "files": "*.sol",
         "options": {
-          "printWidth": 90,
+          "printWidth": 97,
           "compiler": "0.8.23"
         }
       }
