@@ -17,11 +17,19 @@ interface IInteractionRegistry {
         bytes4 functionSelector;
     }
 
-    function predictInteractionId(uint16 chainId, address recipient, bytes4 functionSelector) external pure returns(bytes32);
+    function predictInteractionId(
+        uint16 chainId,
+        address recipient,
+        bytes4 functionSelector
+    ) external pure returns (bytes32);
 
     function interactionDataFor(bytes32) external view returns (uint16, address, bytes4);
 
-    function registerInteractionId(uint16 chainId, address recipient, bytes4 functionSeletor) external;
+    function registerInteractionId(
+        uint16 chainId,
+        address recipient,
+        bytes4 functionSeletor
+    ) external;
 }
 
 contract InteractionRegistryErrorHelper {

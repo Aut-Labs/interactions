@@ -13,13 +13,13 @@ interface IResolver {
     );
 
     /// @dev Conversion from human-readable string handle into 32-byte discovery key
-    /// @param handle human-readable string containing a handle for some relevant contract 
+    /// @param handle human-readable string containing a handle for some relevant contract
     /// @return key 32-byte discovery key
     function castHandleToKey(string memory handle) external view returns (bytes32 key);
 
     /// @dev Resolve actual contract address for a given discovery key
     /// @param key a 32-byte discovery key
-    /// @return resource a smart contract address mapped with the key 
+    /// @return resource a smart contract address mapped with the key
     function resolve(bytes32 key) external view returns (address resource);
 
     /// @dev Link human-readable string handle w/ respective discovery key to a contract address
