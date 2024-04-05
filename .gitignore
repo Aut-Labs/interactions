@@ -18,6 +18,3 @@ yarn.lock
 !broadcast
 broadcast/*
 broadcast/*/31337/
-
-# static analysis
-crytic-export/
