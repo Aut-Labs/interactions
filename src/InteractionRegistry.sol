@@ -17,7 +17,11 @@ interface IInteractionRegistry {
         bytes4 functionSelector;
     }
 
+    function predictInteractionId(uint16 chainId, address recipient, bytes4 functionSelector) external pure returns(bytes32);
+
     function interactionDataFor(bytes32) external view returns (uint16, address, bytes4);
+
+    function registerInteractionId(uint16 chainId, address recipient, bytes4 functionSeletor) external;
 }
 
 contract InteractionRegistryErrorHelper {
@@ -85,8 +89,6 @@ contract InteractionRegistry is
         bytes4 functionSelector
     ) external {
         _checkRole(OPERATOR_ROLE);
-        require(chainId != 0, "invalid chain id");
-        require(recipient != address(0), "invalid recipient");
         if (chainId == 0) {
             revert InvalidChainIdError();
         }

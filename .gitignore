@@ -21,3 +21,6 @@ broadcast/*/31337/
 
 # static analysis
 crytic-export/
+
+# temporary
+docs/
