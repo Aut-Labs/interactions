@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.23;
 
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
@@ -20,18 +20,32 @@ interface IInteractionRegistry {
     function interactionDataFor(bytes32) external view returns (uint16, address, bytes4);
 }
 
-contract InteractionRegistry is IInteractionRegistry, AccessControl {
+contract InteractionRegistryErrorHelper {
+    error InitialManagerEmptyError();
+    error KeyEmptyError();
+    error InvalidRecipientError();
+    error InvalidChainIdError();
+    error InteractionAlreadyExistError();
+}
+
+contract InteractionRegistry is
+    IInteractionRegistry,
+    InteractionRegistryErrorHelper,
+    AccessControl
+{
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
 
-    mapping(bytes32 => TInteractionData) internal _interactionDataFor;
+    mapping(bytes32 interactionId => TInteractionData data) internal _interactionDataFor;
     bytes32 internal constant INTERACTION_DATA_TYPEHASH =
         keccak256(
-            "TInteractionData(uint16 chainId,address recipient, bytes4 functionSelector)"
+            "TInteractionData(uint16 chainId,address recipient,bytes4 functionSelector)"
         );
 
     constructor(address initialOperatorManager) {
-        require(initialOperatorManager != address(0), "should set initial manager");
+        if (initialOperatorManager == address(0)) {
+            revert InitialManagerEmptyError();
+        }
 
         _setRoleAdmin(OPERATOR_ROLE, MANAGER_ROLE);
         _grantRole(MANAGER_ROLE, initialOperatorManager);
@@ -41,7 +55,9 @@ contract InteractionRegistry is IInteractionRegistry, AccessControl {
     function interactionDataFor(
         bytes32 key
     ) external view returns (uint16, address, bytes4) {
-        require(key != bytes32(0));
+        if (key == bytes32(0)) {
+            revert KeyEmptyError();
+        }
         TInteractionData memory interactionData = _interactionDataFor[key];
         return (
             interactionData.chainId,
@@ -71,6 +87,12 @@ contract InteractionRegistry is IInteractionRegistry, AccessControl {
         _checkRole(OPERATOR_ROLE);
         require(chainId != 0, "invalid chain id");
         require(recipient != address(0), "invalid recipient");
+        if (chainId == 0) {
+            revert InvalidChainIdError();
+        }
+        if (recipient == address(0)) {
+            revert InvalidRecipientError();
+        }
 
         TInteractionData memory data = TInteractionData({
             chainId: chainId,
@@ -78,7 +100,12 @@ contract InteractionRegistry is IInteractionRegistry, AccessControl {
             functionSelector: functionSelector
         });
         bytes32 interactionId = _calcInteractionIdFor(data);
-        require(_interactionDataFor[interactionId].chainId != 0, "already exists");
+        if (
+            // check for non-empty
+            _interactionDataFor[interactionId].chainId != 0
+        ) {
+            revert InteractionAlreadyExistError();
+        }
 
         _interactionDataFor[interactionId] = data;
 

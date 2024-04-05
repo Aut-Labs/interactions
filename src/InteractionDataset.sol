@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.23;
 
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
@@ -25,7 +25,15 @@ interface IInteractionDataset {
     function updateRoot(bytes32 nextMerkleRoot, bytes32 nextProofsHash) external;
 }
 
-contract InteractionDataset is IInteractionDataset, AccessControl {
+abstract contract InteractionDatasetErrorHelper {
+    error InitialManagerEmptyError();
+}
+
+contract InteractionDataset is
+    IInteractionDataset,
+    InteractionDatasetErrorHelper,
+    AccessControl
+{
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
     bytes32 public constant RELAYER_ROLE = keccak256("RELAYER_ROLE");
 
@@ -36,10 +44,9 @@ contract InteractionDataset is IInteractionDataset, AccessControl {
     uint32 public epoch;
 
     constructor(address initialRelayerManager) {
-        require(
-            address(initialRelayerManager) != address(0),
-            "should set initial manager"
-        );
+        if (initialRelayerManager == address(0)) {
+            revert InitialManagerEmptyError();
+        }
         _setRoleAdmin(RELAYER_ROLE, MANAGER_ROLE);
         _grantRole(MANAGER_ROLE, initialRelayerManager);
         _grantRole(RELAYER_ROLE, initialRelayerManager);
@@ -50,8 +57,6 @@ contract InteractionDataset is IInteractionDataset, AccessControl {
         bytes32 interactionId,
         bytes32[] calldata hashedPairsProof
     ) external view returns (bool) {
-        // backend deserialized and made sure that txHash is indeed interaction inthash
-        // by now it seems that any txHash could have at most corresponding intHash and vice-versa (except for funcSig collisions xD)
         return
             MerkleProof.verifyCalldata(
                 hashedPairsProof,
