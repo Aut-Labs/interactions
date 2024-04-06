@@ -11,6 +11,9 @@ interface IInteractionDataset {
         bytes32 proofsHash
     );
 
+    function MANAGER_ROLE() external pure returns (bytes32);
+    function RELAYER_ROLE() external pure returns (bytes32);
+
     function merkleRoot() external view returns (bytes32);
     function proofsHash() external view returns (bytes32);
     function updatedAt() external view returns (uint64);

@@ -2,7 +2,6 @@
 pragma solidity 0.8.23;
 
 import {PRBTest} from "@prb/test/src/PRBTest.sol";
-import {console2} from "forge-std/src/console2.sol";
 import {StdCheats} from "forge-std/src/StdCheats.sol";
 
 import {IInteractionRegistry, InteractionRegistry} from "../src/InteractionRegistry.sol";
@@ -56,6 +55,7 @@ contract InteractionRegistryTest is PRBTest, StdCheats {
 
     function testFuzz_AccessControlRegisterInteractionId(address sender) public virtual {
         vm.assume(sender != address(0));
+        vm.assume(sender != address(this));
         vm.expectRevert();
         vm.prank(sender);
         subj.registerInteractionId(1, address(this), 0xffffffff);

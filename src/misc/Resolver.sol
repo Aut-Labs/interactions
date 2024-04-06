@@ -12,6 +12,9 @@ interface IResolver {
         string handle
     );
 
+    function MANAGER_ROLE() external view returns (bytes32);
+    function OPERATOR_ROLE() external view returns (bytes32);
+
     /// @dev Conversion from human-readable string handle into 32-byte discovery key
     /// @param handle human-readable string containing a handle for some relevant contract
     /// @return key 32-byte discovery key
@@ -34,7 +37,6 @@ abstract contract ResolverErrorHelper {
     error KeyHandleMissmatchError();
 }
 
-/// @inheritdoc IResolver
 contract Resolver is IResolver, ResolverErrorHelper, AccessControl {
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
