@@ -20,7 +20,6 @@ contract InteractionDatasetTest is PRBTest, StdCheats {
         IAccessControl(address(sub)).grantRole(sub.RELAYER_ROLE(), relayer);
     }
 
-
     function testFails_StrangerUpdateRoot() public virtual {
         vm.prank(stranger);
         sub.updateRoot(keccak256("a"), keccak256("b"));
@@ -30,7 +29,7 @@ contract InteractionDatasetTest is PRBTest, StdCheats {
         vm.prank(relayer);
         sub.updateRoot(keccak256("relayer"), keccak256("..."));
     }
-    
+
     function test_hasEntryFalseOnEmptyDataset() public virtual {
         bytes32[] memory proof = new bytes32[](2);
         proof[0] = keccak256("proof0");

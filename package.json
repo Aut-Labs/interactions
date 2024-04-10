@@ -25,7 +25,7 @@
     "test": "forge test",
     "test:coverage": "forge coverage",
     "test:coverage:report": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage",
-    "prettier:apply": "prettier --write 'src/**/*.sol'",
-    "prettier:check": "prettier --check 'src/**/*.sol'"
+    "prettier:apply": "prettier --write '**/*.sol'",
+    "prettier:check": "prettier --check '**/*.sol'"
   }
 }

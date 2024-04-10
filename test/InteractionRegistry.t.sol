@@ -13,7 +13,11 @@ contract InteractionRegistryTest is PRBTest, StdCheats {
         subj = IInteractionRegistry(address(new InteractionRegistry(address(this))));
     }
 
-    function testFuzz_registerInteractionId(uint16 chainId, bytes4 functionSelector, address recipient) public virtual {
+    function testFuzz_registerInteractionId(
+        uint16 chainId,
+        bytes4 functionSelector,
+        address recipient
+    ) public virtual {
         vm.assume(chainId != 0);
         vm.assume(recipient != address(0));
         subj.registerInteractionId(chainId, recipient, functionSelector);
@@ -41,13 +45,22 @@ contract InteractionRegistryTest is PRBTest, StdCheats {
         subj.registerInteractionId(chainId, recipient, functionSelector);
     }
 
-    function testFuzz_interactionDataFor(uint16 chainId, address recipient, bytes4 functionSelector) public virtual {
+    function testFuzz_interactionDataFor(
+        uint16 chainId,
+        address recipient,
+        bytes4 functionSelector
+    ) public virtual {
         vm.assume(chainId != 0);
         vm.assume(recipient != address(0));
         subj.registerInteractionId(chainId, recipient, functionSelector);
-        bytes32 interactionId = subj.predictInteractionId(chainId, recipient, functionSelector);
+        bytes32 interactionId = subj.predictInteractionId(
+            chainId,
+            recipient,
+            functionSelector
+        );
         assertNotEq(interactionId, bytes32(0));
-        (uint16 dChainId, address dRecipient, bytes4 dFunctionSelector) = subj.interactionDataFor(interactionId);
+        (uint16 dChainId, address dRecipient, bytes4 dFunctionSelector) = subj
+            .interactionDataFor(interactionId);
         assertEq(dChainId, chainId);
         assertEq(dRecipient, recipient);
         assertEq(dFunctionSelector, functionSelector);
