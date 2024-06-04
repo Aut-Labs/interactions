@@ -1,4 +1,4 @@
-//SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.23;
 
 import {
@@ -18,6 +18,7 @@ abstract contract InteractionFactoryErrorHelper {
     error MetadataURIEmptyError();
 }
 
+/// @title a metadata for interactions
 contract InteractionFactory is
     InteractionFactoryErrorHelper,
     ERC721URIStorageUpgradeable,
@@ -95,4 +96,6 @@ contract InteractionFactory is
         _setTokenURI(interactionId, uri);
         emit InteractionURIUpdated(msg.sender, interactionId, uri);
     }
+
+    uint256[50] private __gap;
 }

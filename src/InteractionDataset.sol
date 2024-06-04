@@ -4,27 +4,45 @@ pragma solidity 0.8.23;
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
+/// @notice a dataset of interactions
 interface IInteractionDataset {
     event MerkleRootUpdated(
         address indexed relayer,
-        bytes32 merkleRoot,
+        bytes32 indexed merkleRoot,
         bytes32 proofsHash
     );
 
-    function MANAGER_ROLE() external pure returns (bytes32);
-    function RELAYER_ROLE() external pure returns (bytes32);
+    /// @return manager role, a role that is for managing relayers
+    function MANAGER_ROLE() external pure returns (bytes32 manager);
 
-    function merkleRoot() external view returns (bytes32);
-    function proofsHash() external view returns (bytes32);
-    function updatedAt() external view returns (uint64);
-    function epoch() external view returns (uint32);
+    /// @return relayer role, a role that is for managing merkle roots
+    function RELAYER_ROLE() external pure returns (bytes32 relayer);
 
+    /// @return current root of the merkle tree of interactions
+    function merkleRoot() external view returns (bytes32 current);
+
+    /// @return current ipfs hash for the full merkle tree file
+    function proofsHash() external view returns (bytes32 current);
+
+    /// @return timestamp of the last update of the merkle tree
+    function updatedAt() external view returns (uint64 timestamp);
+
+    /// @return number of times that merkle tree has been updated
+    function epoch() external view returns (uint32 number);
+
+    /// @dev checks if the given transaction hash match given interaction id
+    /// @param txId transaction hash
+    /// @param interactionId interaction id (see InteractionFactory contract)
+    /// @return status of inclusion in the interaction dataset for the given entry
     function hasEntry(
         bytes32 txId,
         bytes32 interactionId,
         bytes32[] memory hashedPairsProof
-    ) external view returns (bool);
+    ) external view returns (bool status);
 
+    /// @dev updates merkle tree (invoked by "relayer" role)
+    /// @param nextMerkleRoot root hash of the next merkle tree
+    /// @param nextProofsHash next proofs hash
     function updateRoot(bytes32 nextMerkleRoot, bytes32 nextProofsHash) external;
 }
 
@@ -37,13 +55,19 @@ contract InteractionDataset is
     InteractionDatasetErrorHelper,
     AccessControl
 {
+    /// @inheritdoc IInteractionDataset
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
+    /// @inheritdoc IInteractionDataset
     bytes32 public constant RELAYER_ROLE = keccak256("RELAYER_ROLE");
 
+    /// @inheritdoc IInteractionDataset
     bytes32 public merkleRoot;
+    /// @inheritdoc IInteractionDataset
     bytes32 public proofsHash;
 
+    /// @inheritdoc IInteractionDataset
     uint64 public updatedAt;
+    /// @inheritdoc IInteractionDataset
     uint32 public epoch;
 
     constructor(address initialRelayerManager) {
@@ -55,6 +79,7 @@ contract InteractionDataset is
         _grantRole(RELAYER_ROLE, initialRelayerManager);
     }
 
+    /// @inheritdoc IInteractionDataset
     function hasEntry(
         bytes32 txId,
         bytes32 interactionId,
@@ -68,6 +93,7 @@ contract InteractionDataset is
             );
     }
 
+    /// @inheritdoc IInteractionDataset
     function updateRoot(bytes32 nextMerkleRoot, bytes32 nextProofsHash) external {
         _checkRole(RELAYER_ROLE);
 
@@ -78,4 +104,6 @@ contract InteractionDataset is
 
         emit MerkleRootUpdated(msg.sender, nextMerkleRoot, nextProofsHash);
     }
+
+    uint256[50] private __gap;
 }

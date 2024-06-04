@@ -3,32 +3,50 @@ pragma solidity 0.8.23;
 
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
+/// @title a registry for interactions
 interface IInteractionRegistry {
     event InteractionTypeCreated(
-        bytes32 interactionId,
+        bytes32 indexed interactionId,
         uint16 chainId,
         address recipient,
         bytes4 functionSelector
     );
 
+    /// @dev interaction definition data struct
     struct TInteractionData {
         uint16 chainId;
         address recipient;
         bytes4 functionSelector;
     }
 
+    /// @dev calculates interaction id by the given interaction data
+    /// @param chainId chain id of the interaction
+    /// @param recipient call address (tx to) of the interaction
+    /// @param functionSelector 4 bytes of the function selector of the interaction
+    /// @return interactionId identifier of the interaction with the given params
     function predictInteractionId(
         uint16 chainId,
         address recipient,
         bytes4 functionSelector
-    ) external pure returns (bytes32);
+    ) external pure returns (bytes32 interactionId);
 
-    function interactionDataFor(bytes32) external view returns (uint16, address, bytes4);
+    /// @dev returns interaction data for the given interaction id
+    /// @param interactionId identifier of the interaction
+    /// @return chainId chain id of the interaction
+    /// @return recipient call address (tx to) of the interaction
+    /// @return functionSelector 4 bytes of the function selector of the interaction
+    function interactionDataFor(
+        bytes32 interactionId
+    ) external view returns (uint16 chainId, address recipient, bytes4 functionSelector);
 
+    /// @dev registeres interaction type by the given interaction data
+    /// @param chainId chain id of the interaction
+    /// @param recipient call address (tx to) of the interaction
+    /// @param functionSelector 4 bytes of the function selector of the interaction
     function registerInteractionId(
         uint16 chainId,
         address recipient,
-        bytes4 functionSeletor
+        bytes4 functionSelector
     ) external;
 }
 
@@ -64,6 +82,7 @@ contract InteractionRegistry is
         _grantRole(OPERATOR_ROLE, initialOperatorManager);
     }
 
+    /// @inheritdoc IInteractionRegistry
     function interactionDataFor(
         bytes32 key
     ) external view returns (uint16, address, bytes4) {
@@ -78,6 +97,7 @@ contract InteractionRegistry is
         );
     }
 
+    /// @inheritdoc IInteractionRegistry
     function predictInteractionId(
         uint16 chainId,
         address recipient,
@@ -91,6 +111,7 @@ contract InteractionRegistry is
         return _calcInteractionIdFor(data);
     }
 
+    /// @inheritdoc IInteractionRegistry
     function registerInteractionId(
         uint16 chainId,
         address recipient,
@@ -127,7 +148,7 @@ contract InteractionRegistry is
         );
     }
 
-    /// @dev A helper utility for calculating interaction data hash
+    /// @dev a helper utility for calculating interaction data hash
     function _calcInteractionIdFor(
         TInteractionData memory data
     ) internal pure returns (bytes32) {
@@ -141,4 +162,6 @@ contract InteractionRegistry is
                 )
             );
     }
+
+    uint256[50] private __gap;
 }
