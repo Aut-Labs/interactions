@@ -96,6 +96,4 @@ contract InteractionFactory is
         _setTokenURI(interactionId, uri);
         emit InteractionURIUpdated(msg.sender, interactionId, uri);
     }
-
-    uint256[50] private __gap;
 }

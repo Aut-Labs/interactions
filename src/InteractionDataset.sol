@@ -104,6 +104,4 @@ contract InteractionDataset is
 
         emit MerkleRootUpdated(msg.sender, nextMerkleRoot, nextProofsHash);
     }
-
-    uint256[50] private __gap;
 }

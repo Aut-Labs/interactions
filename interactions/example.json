@@ -1,0 +1,10 @@
+{
+    "chainId": 1,
+    "txTo": "0x...",
+    "functionSelector": "0xabab",
+    "extra": {
+        "title": "...",
+        "description": "...",
+        "avatarUrl": "..."
+    }
+}
