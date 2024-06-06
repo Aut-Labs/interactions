@@ -11,6 +11,8 @@ contract DeployAll is Script {
     function setUp() public {
         if (block.chainid == 31337) {
             // vm.writeLine(filename, "deploying to local network (foundry)");
+        } else if (block.chainid == 80002) {
+            // ok
         } else {
             revert("wrong chainid");
         }
