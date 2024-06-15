@@ -29,11 +29,11 @@ interface IInteractionRegistry {
 
     /// @notice a role that manage operator role
     /// @return manager role
-    function MANAGER_ROLE() external pure returns(bytes32 manager);
+    function MANAGER_ROLE() external pure returns (bytes32 manager);
 
     /// @notice a role that manage and update interaction types
     /// @return operator role
-    function OPERATOR_ROLE() external pure returns(bytes32 operator);
+    function OPERATOR_ROLE() external pure returns (bytes32 operator);
 
     /// @notice calculates interaction id by the given interaction data
     /// @param chainId chain id of the interaction

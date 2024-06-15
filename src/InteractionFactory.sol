@@ -13,12 +13,8 @@ import {
     AccessControlUpgradeable
 } from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-
 /// @title a ERC721 upgradeable contract with metadata contract for interactions
-contract InteractionFactory is
-    ERC721URIStorageUpgradeable,
-    AccessControlUpgradeable
-{
+contract InteractionFactory is ERC721URIStorageUpgradeable, AccessControlUpgradeable {
     /// @notice en event emmited on interactionURI update
     /// @param sender sender address of the update
     /// @param interactionId id of interaction
@@ -31,10 +27,7 @@ contract InteractionFactory is
     /// @notice en event emitted on interaction mint
     event InteractionMinted(address indexed sender, uint256 interactionId);
     /// @notice an event emitted on transferability change
-    event TransferabilitySet(
-        address indexed sender,
-        bool isTransferable
-    );
+    event TransferabilitySet(address indexed sender, bool isTransferable);
 
     /// @notice an error raised when initialManager is zero address
     error InitialManagerEmptyError();
