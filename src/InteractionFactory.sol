@@ -12,15 +12,9 @@ import {
     AccessControlUpgradeable
 } from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-abstract contract InteractionFactoryErrorHelper {
-    error InitialManagerEmptyError();
-    error TransferUnallowedError();
-    error MetadataURIEmptyError();
-}
 
-/// @title a metadata for interactions
+/// @title a ERC721 upgradeable contract with metadata contract for interactions
 contract InteractionFactory is
-    InteractionFactoryErrorHelper,
     ERC721URIStorageUpgradeable,
     AccessControlUpgradeable
 {
@@ -30,6 +24,10 @@ contract InteractionFactory is
         string uri
     );
     event InteractionMinted(address indexed sender, uint256 interactionId);
+
+    error InitialManagerEmptyError();
+    error TransferUnallowedError();
+    error MetadataURIEmptyError();
 
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");

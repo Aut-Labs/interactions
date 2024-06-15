@@ -3,8 +3,13 @@ pragma solidity 0.8.23;
 
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
-/// @title a registry for interactions
+/// @title a registry contract interface for interactions
 interface IInteractionRegistry {
+    /// @notice an event emmited on interaction type creation
+    /// @param interactionId interaction type identifier (a keccak256 of chainId, recipient and functionSelector)
+    /// @param chainId chain id of the interaction
+    /// @param recipient call address (tx to) of the interaction
+    /// @param functionSelector 4 bytes of the function selector of the interaction
     event InteractionTypeCreated(
         bytes32 indexed interactionId,
         uint16 chainId,
@@ -12,14 +17,25 @@ interface IInteractionRegistry {
         bytes4 functionSelector
     );
 
-    /// @dev interaction definition data struct
+    /// @notice interaction definition data struct
+    /// @param chainId chain id of the interaction
+    /// @param recipient call address (tx to) of the interaction
+    /// @param functionSelector 4 bytes of the function selector of the interaction
     struct TInteractionData {
         uint16 chainId;
         address recipient;
         bytes4 functionSelector;
     }
 
-    /// @dev calculates interaction id by the given interaction data
+    /// @notice a role that manage operator role
+    /// @return manager role
+    function MANAGER_ROLE() external pure returns(bytes32 manager);
+
+    /// @notice a role that manage and update interaction types
+    /// @return operator role
+    function OPERATOR_ROLE() external pure returns(bytes32 operator);
+
+    /// @notice calculates interaction id by the given interaction data
     /// @param chainId chain id of the interaction
     /// @param recipient call address (tx to) of the interaction
     /// @param functionSelector 4 bytes of the function selector of the interaction
@@ -30,7 +46,7 @@ interface IInteractionRegistry {
         bytes4 functionSelector
     ) external pure returns (bytes32 interactionId);
 
-    /// @dev returns interaction data for the given interaction id
+    /// @notice returns interaction data for the given interaction id
     /// @param interactionId identifier of the interaction
     /// @return chainId chain id of the interaction
     /// @return recipient call address (tx to) of the interaction
@@ -39,7 +55,7 @@ interface IInteractionRegistry {
         bytes32 interactionId
     ) external view returns (uint16 chainId, address recipient, bytes4 functionSelector);
 
-    /// @dev registeres interaction type by the given interaction data
+    /// @notice registeres interaction type by the given interaction data
     /// @param chainId chain id of the interaction
     /// @param recipient call address (tx to) of the interaction
     /// @param functionSelector 4 bytes of the function selector of the interaction
@@ -50,20 +66,27 @@ interface IInteractionRegistry {
     ) external;
 }
 
+/// @dev a helper contract for the interaction registry with error definitions
 contract InteractionRegistryErrorHelper {
+    /// @notice raised when initialManager is zero address
     error InitialManagerEmptyError();
-    error KeyEmptyError();
+    /// @notice raised when interaction recipient (tx to) address is invalid
     error InvalidRecipientError();
+    /// @notice raised when interaction chain id is invalid
     error InvalidChainIdError();
+    /// @notice raised when attempted to create an interaction duplicate
     error InteractionAlreadyExistError();
 }
 
+/// @notice a registry contract for interaction
 contract InteractionRegistry is
     IInteractionRegistry,
     InteractionRegistryErrorHelper,
     AccessControl
 {
+    /// @inheritdoc IInteractionRegistry
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
+    /// @inheritdoc IInteractionRegistry
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
 
     mapping(bytes32 interactionId => TInteractionData data) internal _interactionDataFor;
@@ -86,9 +109,6 @@ contract InteractionRegistry is
     function interactionDataFor(
         bytes32 key
     ) external view returns (uint16, address, bytes4) {
-        if (key == bytes32(0)) {
-            revert KeyEmptyError();
-        }
         TInteractionData memory interactionData = _interactionDataFor[key];
         return (
             interactionData.chainId,
@@ -162,6 +182,4 @@ contract InteractionRegistry is
                 )
             );
     }
-
-    uint256[50] private __gap;
 }

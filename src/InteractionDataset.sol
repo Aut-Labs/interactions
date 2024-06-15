@@ -6,16 +6,22 @@ import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
 /// @notice a dataset of interactions
 interface IInteractionDataset {
+    /// @notice an event emitted on merkle tree root update
+    /// @param relayer address of the relayer caused an update
+    /// @param merkleRoot new merkle root pushed by the relayer
+    /// @param proofsHash hash of the merkle tree source file (nullable)
     event MerkleRootUpdated(
         address indexed relayer,
         bytes32 indexed merkleRoot,
         bytes32 proofsHash
     );
 
-    /// @return manager role, a role that is for managing relayers
+    /// @notice a role that manage relayer role
+    /// @return manager role
     function MANAGER_ROLE() external pure returns (bytes32 manager);
 
-    /// @return relayer role, a role that is for managing merkle roots
+    /// @notice a role that manage and update merkle roots
+    /// @return relayer role
     function RELAYER_ROLE() external pure returns (bytes32 relayer);
 
     /// @return current root of the merkle tree of interactions
@@ -46,7 +52,9 @@ interface IInteractionDataset {
     function updateRoot(bytes32 nextMerkleRoot, bytes32 nextProofsHash) external;
 }
 
+/// @title a helper contract for the interaction dataset with error definitions
 abstract contract InteractionDatasetErrorHelper {
+    /// @notice raised when passed zero address to the initialManager argument in the constructor
     error InitialManagerEmptyError();
 }
 
