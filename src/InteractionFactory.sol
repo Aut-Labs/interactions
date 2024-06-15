@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.23;
 
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import {
     ERC721Upgradeable
 } from "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
@@ -18,21 +19,38 @@ contract InteractionFactory is
     ERC721URIStorageUpgradeable,
     AccessControlUpgradeable
 {
+    /// @notice en event emmited on interactionURI update
+    /// @param sender sender address of the update
+    /// @param interactionId id of interaction
+    /// @param uri the uri itself
     event InteractionURIUpdated(
         address indexed sender,
         uint256 indexed interactionId,
         string uri
     );
+    /// @notice en event emitted on interaction mint
     event InteractionMinted(address indexed sender, uint256 interactionId);
+    /// @notice an event emitted on transferability change
+    event TransferabilitySet(
+        address indexed sender,
+        bool isTransferable
+    );
 
+    /// @notice an error raised when initialManager is zero address
     error InitialManagerEmptyError();
+    /// @notice an error raised when attemtep to transfer token
     error TransferUnallowedError();
+    /// @notice en error raised when metadataURI is empty
     error MetadataURIEmptyError();
 
+    /// @notice a role that manage minter role and trasferability
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
+    /// @notice a role that manage minting
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
+    /// @notice a variable that indicates whether tokens are non-transferable
     bool public isNonTransferable = false;
+    /// @notice a variable that stores mint timestamps for each interaction id
     mapping(uint256 interactionId => uint64 timestamp) public mintedAt;
 
     function initialize(address initialManager) public initializer {
@@ -45,6 +63,18 @@ contract InteractionFactory is
         _grantRole(MINTER_ROLE, initialManager);
     }
 
+    /// @notice enable or disable transferability of the whole collection
+    /// @param isTransferable true, if the collection should be transferable, false otherwise
+    function setTransferability(bool isTransferable) external {
+        _checkRole(MANAGER_ROLE);
+        isNonTransferable = !isTransferable;
+        emit TransferabilitySet(msg.sender, isTransferable);
+    }
+
+    /// @notice mint interaction
+    /// @param to address of the recipient of the interaction token
+    /// @param interactionId id of the interaction
+    /// @param uri tokenURI
     function mintInteraction(
         address to,
         uint256 interactionId,
@@ -57,6 +87,9 @@ contract InteractionFactory is
         emit InteractionMinted(to, interactionId);
     }
 
+    /// @notice update tokenURI for the interaction by the owner of interaction token
+    /// @param interactionId id of the interaction
+    /// @param uri new tokenURI
     function updateInteractionURI(uint256 interactionId, string memory uri) external {
         if (bytes(uri).length == 0) {
             revert MetadataURIEmptyError();
@@ -66,6 +99,7 @@ contract InteractionFactory is
         _setInteractionURI(interactionId, uri);
     }
 
+    /// @inheritdoc IERC721
     function transferFrom(
         address from,
         address to,
@@ -78,6 +112,7 @@ contract InteractionFactory is
         }
     }
 
+    /// @inheritdoc IERC165
     function supportsInterface(
         bytes4 interfaceId
     )

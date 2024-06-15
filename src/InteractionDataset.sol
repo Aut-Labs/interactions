@@ -54,7 +54,7 @@ interface IInteractionDataset {
 
 /// @title a helper contract for the interaction dataset with error definitions
 abstract contract InteractionDatasetErrorHelper {
-    /// @notice raised when passed zero address to the initialManager argument in the constructor
+    /// @notice raised when initialManager is zero address
     error InitialManagerEmptyError();
 }
 
