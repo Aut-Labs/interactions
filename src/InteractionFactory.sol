@@ -41,10 +41,22 @@ contract InteractionFactory is ERC721URIStorageUpgradeable, AccessControlUpgrade
     /// @notice a role that manage minting
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-    /// @notice a variable that indicates whether tokens are non-transferable
-    bool public isNonTransferable = false;
-    /// @notice a variable that stores mint timestamps for each interaction id
-    mapping(uint256 interactionId => uint64 timestamp) public mintedAt;
+    struct AppStorage {
+        /// @notice a variable that indicates whether tokens are non-transferable
+        bool isNonTransferable;
+        /// @notice a variable that stores mint timestamps for each interaction id
+        mapping(uint256 interactionId => uint64 timestamp) mintedAt;
+    }
+    bytes32 public constant APP_STORAGE_LOCATION = keccak256(abi.encode(uint256(keccak256("InteractionFactory.app")) - 1)) & ~bytes32(uint256(0xff));
+    function getAppStorage() private pure returns (AppStorage storage $) {
+        assembly {
+            $.slot := APP_STORAGE_LOCATION
+        }
+    }
+
+    constructor() {
+        _disableInitializers();
+    }
 
     function initialize(address initialManager) public initializer {
         if (address(initialManager) == address(0)) {
@@ -60,7 +72,8 @@ contract InteractionFactory is ERC721URIStorageUpgradeable, AccessControlUpgrade
     /// @param isTransferable true, if the collection should be transferable, false otherwise
     function setTransferability(bool isTransferable) external {
         _checkRole(MANAGER_ROLE);
-        isNonTransferable = !isTransferable;
+        AppStorage storage $ =_getAppStorage();
+        $.isNonTransferable = !$.isNonTransferable;
         emit TransferabilitySet(msg.sender, isTransferable);
     }
 
@@ -76,7 +89,8 @@ contract InteractionFactory is ERC721URIStorageUpgradeable, AccessControlUpgrade
         _checkRole(MINTER_ROLE);
         _mint(to, interactionId);
         _setInteractionURI(interactionId, uri);
-        mintedAt[interactionId] = uint64(block.timestamp);
+        AppStorage storage $ = _getAppStorage();
+        $.mintedAt[interactionId] = uint64(block.timestamp);
         emit InteractionMinted(to, interactionId);
     }
 
@@ -98,7 +112,8 @@ contract InteractionFactory is ERC721URIStorageUpgradeable, AccessControlUpgrade
         address to,
         uint256 tokenId
     ) public virtual override(ERC721Upgradeable, IERC721) {
-        if (isNonTransferable) {
+        AppStorage storage $ = _getAppStorage();
+        if ($.isNonTransferable) {
             revert TransferUnallowedError();
         } else {
             super.transferFrom(from, to, tokenId);
@@ -121,5 +136,15 @@ contract InteractionFactory is ERC721URIStorageUpgradeable, AccessControlUpgrade
     function _setInteractionURI(uint256 interactionId, string memory uri) internal {
         _setTokenURI(interactionId, uri);
         emit InteractionURIUpdated(msg.sender, interactionId, uri);
+    }
+
+    function isNonTransferable() external view returns (bool) {
+        AppStorage storage $ = _getAppStorage();
+        return $.isNonTransferable;
+    }
+
+    function mintedAt(uint256 interactionId) external view returns (uint64) {
+        AppStorage storage $ = _getAppStorage();
+        return $.mintedAt[interactionId];
     }
 }
